@@ -45,4 +45,8 @@ header {
     #reviews {
         display: none;
     }
+
+    h1 {
+        font-size: large;
+    }
 }

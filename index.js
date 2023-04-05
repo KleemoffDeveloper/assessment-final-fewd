@@ -1,7 +1,8 @@
-const BASE_URL = "https://resource-ghibli-api.onrender.com/films";
+const BASE_URL = "https://resource-ghibli-api.onrender.com";
 
 // Global storage for all movies
 let allMovies;
+let allPeople;
 
 // Movie Selection
 let displayh3;
@@ -26,7 +27,29 @@ let peopleList = sections[3].querySelector('ol');
 let showPeopleButton = document.getElementById('show-people');
 
 window.onload = async () => {
-    await populateSelectMenu(BASE_URL);
+    let moviesJSON = await fetch(BASE_URL + '/films')
+    .then(response => response.json())
+    .then(data => {
+        allMovies = data;
+        console.log(data);
+    })
+    .catch(error => {
+        console.log(error);
+    });
+
+    allMovies.forEach(movie => {
+        populateSelectMenu(movie);
+    });
+
+    let peopleJSON = await fetch(BASE_URL + '/people')
+    .then(response => response.json())
+    .then(data => {
+        allPeople = data;
+        console.log(data);
+    })
+    .catch(error => {
+        console.log(error);
+    });
 
     generateDisplayElements();
 
@@ -78,34 +101,20 @@ window.onload = async () => {
     }
 
     showPeopleButton.onclick = () => {
-        let listElement = document.createElement('li');
-
-        peopleList.append()
+        let movie = selectedMovie(titlesParent.value);
+        displayPeople(movie);
     }
 }
 
-async function populateSelectMenu(url) {
-     await fetch(url)
-    .then(response => response.json())
-    .then(data => {
-        allMovies = data;
+function populateSelectMenu(movie) {
+    let movieOption = document.createElement('option');
 
-        for(let i = 0; i < data.length; i++) {
-            let movie = data[i];
+    movieOption.value = movie.id;
 
-            let movieOption = document.createElement('option');
+    movieOption.innerText = movie.title;
 
-            movieOption.value = movie.id;
-
-            movieOption.innerText = movie.title;
-
-            titlesParent.append(movieOption);
-        }
-    })
-    .catch(error => {
-        console.log(error);
-    });
-}  
+    titlesParent.append(movieOption);
+}
 
 function generateDisplayElements() {
     displayh3 = document.createElement('h3');
@@ -124,4 +133,21 @@ function selectedMovie(movieId) {
         }
     }
     return null;
+}
+
+function displayPeople(movie) {
+    let allListElements = peopleList.querySelectorAll('li');
+    for(let i = 0; i < allListElements.length; i++) {
+        allListElements[i].remove();
+    }
+
+    allPeople.forEach(person => {
+        movie.people.forEach(moviePerson => {
+            if(person.url === moviePerson) {
+                let li = document.createElement('li');
+                li.innerText = person.name;
+                peopleList.append(li);
+            }
+        });
+    });
 }
